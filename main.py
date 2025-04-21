@@ -12,6 +12,8 @@ import zlib
 import base64
 import os
 from dotenv import load_dotenv
+from keep_alive import keep_alive
+keep_alive()
 load_dotenv()
 
 token = os.getenv("TOKEN")
