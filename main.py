@@ -208,7 +208,7 @@ async def hello(interaction: discord.Interaction, id: str):
 @app_commands.allowed_contexts(guilds=True,dms=True,private_channels=True)
 @app_commands.user_install()
 async def about(interaction: discord.Interaction):
-    interaction.response.send_message("Бот взаимодействует с **API** JustMc, благодаря чему ты можешь получать данные о мирах.\n\nЕсли вы нашли баг то сообщите создателю бота: - DS **dominosmersi**\nTG **@DominosMersi**")
+    interaction.response.send_message("Бот взаимодействует с **API** JustMc, благодаря чему ты можешь получать данные о мирах.\\n\\nЕсли вы нашли баг то сообщите создателю бота: - DS **dominosmersi**\\nTG **@DominosMersi**")
 
 
 client.run(token)
