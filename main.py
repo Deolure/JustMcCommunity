@@ -183,8 +183,13 @@ async def hello(interaction: discord.Interaction, id: str):
         displayName = data["displayName"]
         defaultName, color = strip_minecraft_colors(displayName)
 
-        itemData = get_item_id(data["displayItem"])
-        itemData = itemData.replace("minecraft:","")
+        item_raw = data["displayItem"]
+        
+        if item_raw != None:
+            itemData = get_item_id(data["displayItem"])
+            itemData = itemData.replace("minecraft:","")
+        else:
+            itemData = "grass_block"
 
         embed = discord.Embed(title=f"{defaultName}", description=f"Владелец мира: {owner_name}", color=colourr(f"{color}"))
         embed.add_field(name="Дата создания", value=f"🕦 {createdTime}", inline=True)
