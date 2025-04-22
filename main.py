@@ -50,25 +50,34 @@ def get_item_id(minecraft_str):
             return "minecraft:grass_block"
 
 def strip_minecraft_colors(text):
-    # Удаляет HTML-подобные цвета типа &#ffffff
+    first_color = None
+
+    # Ищем первый цвет: HTML-стиль или Minecraft-style (&a, §c и т.д.)
+    color_match = re.search(r'&?#([0-9a-fA-F]{6})|[§&]([0-9a-fA-F])', text, flags=re.IGNORECASE)
+    if color_match:
+        if color_match.group(1):  # HTML-цвет, например #ff00ff
+            first_color = color_match.group(1).lower()
+        elif color_match.group(2):  # Minecraft код, например §a
+            mc_colors = {
+                '0': '000000', '1': '0000aa', '2': '00aa00', '3': '00aaaa',
+                '4': 'aa0000', '5': 'aa00aa', '6': 'ffaa00', '7': 'aaaaaa',
+                '8': '555555', '9': '5555ff', 'a': '55ff55', 'b': '55ffff',
+                'c': 'ff5555', 'd': 'ff55ff', 'e': 'ffff55', 'f': 'ffffff'
+            }
+            first_color = mc_colors[color_match.group(2).lower()]
+
+    # Удаляем все цветовые и форматирующие коды
     text = re.sub(r'&?#(?:[0-9a-fA-F]{6})', '', text)
-
-    # Удаляет форматные коды Minecraft типа §a, §l, и т.д.
     text = re.sub(r'§[0-9a-fklmnor]', '', text, flags=re.IGNORECASE)
-
-    # Удаляет одиночные & символы с форматами Minecraft (например, &a, &l)
     text = re.sub(r'&[0-9a-fklmnor]', '', text, flags=re.IGNORECASE)
 
-    # Декодирует HTML-сущности (например, &#fb2f13 -> специальный символ)
+    # Декодируем HTML-сущности
     text = html.unescape(text)
 
-    # Преобразуем юникодные символы типа \uXXXX в их обычные символы
-    text = text.encode('utf-8').decode('utf-8')
-
-    # Разбиваем текст по символу новой строки и берем только первую строку
+    # Обработка строки типа '\\n'
     text = text.split('\\n')[0]
 
-    return text
+    return text.strip(), f"#{first_color}" if first_color else "#ffffff"
 
 
 def colourr(hex_color):
@@ -172,12 +181,12 @@ async def hello(interaction: discord.Interaction, id: str):
             recommended = "Нет"
 
         displayName = data["displayName"]
-        defaultName = strip_minecraft_colors(displayName)
+        defaultName, color = strip_minecraft_colors(displayName)
 
         itemData = get_item_id(data["displayItem"])
         itemData = itemData.replace("minecraft:","")
 
-        embed = discord.Embed(title=f"{defaultName}", description=f"Владелец мира: {owner_name}", color=colourr("#a6ff6e"))
+        embed = discord.Embed(title=f"{defaultName}", description=f"Владелец мира: {owner_name}", color=colourr(f"{color}"))
         embed.add_field(name="Дата создания", value=f"🕦 {createdTime}", inline=True)
         embed.add_field(name="Размер", value=f"🗺️ {size * 32}x{size * 32}", inline=True)
         embed.add_field(name="Голосов", value=f"⭐ {votes}",inline=True)
@@ -208,7 +217,7 @@ async def hello(interaction: discord.Interaction, id: str):
 @app_commands.allowed_contexts(guilds=True,dms=True,private_channels=True)
 @app_commands.user_install()
 async def about(interaction: discord.Interaction):
-    await interaction.response.send_message("Бот взаимодействует с **API** JustMc, благодаря чему ты можешь получать данные о мирах.\n\nЕсли вы нашли баг то сообщите создателю бота:\n- DS **dominosmersi**\n-TG **@DominosMersi**")
+    await interaction.response.send_message("Бот взаимодействует с **API** JustMc, благодаря чему ты можешь получать данные о мирах.\n\nЕсли вы нашли баг то сообщите создателю бота:\n- DS **dominosmersi**\n- TG **@DominosMersi**")
 
 
 client.run(token)
