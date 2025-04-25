@@ -11,12 +11,43 @@ import re
 import zlib
 import base64
 import os
+import gzip
+import io
+from io import BytesIO
+import nbtlib
+from typing import Dict, Any
+from gzip import GzipFile
+from base64 import b64decode
 from dotenv import load_dotenv
 from keep_alive import keep_alive
 keep_alive()
 load_dotenv()
 
 token = os.getenv("TOKEN")
+
+def decode_base64_to_json(base64_str: str) -> dict:
+    """
+    Декодирует Base64-строку и преобразует её в JSON-объект (dict).
+    """
+    decoded_bytes = base64.b64decode(base64_str)
+    decoded_str = decoded_bytes.decode("utf-8")
+    return json.loads(decoded_str)
+
+def get_skin_value_nbt(snbt_str: str) -> str:
+    """
+    Извлекает значение Value текстуры скина из SNBT-строки с помощью nbtlib.
+    Пример входной строки: '{Count:1b,id:"minecraft:player_head",tag:{SkullOwner:{...}}}'
+    """
+    # Парсим строку в NBT-объект
+    nbt = nbtlib.parse_nbt(snbt_str)
+
+    # Переход по вложенным ключам к Value
+    value = nbt["tag"]["SkullOwner"]["Properties"]["textures"][0]["Value"]
+
+    return value
+
+
+
 def extract_id_from_encoded_data(encoded_data):
     try:
         # Декодируем строку из base64
@@ -41,13 +72,32 @@ def get_item_id(minecraft_str):
     # Находим значение после id:
     match = re.search(r'id:"([^"]+)"', minecraft_str)
     if match:
-        return match.group(1)  # Возвращаем найденное значение
+        if "player_head" in match.group(1):
+            value = get_skin_value_nbt(minecraft_str)
+            base64 = decode_base64_to_json(value)
+            skin_hash = str(base64['textures']['SKIN']['url']).split('/')[-1]
+            print(f"https://mc-heads.net/head/{skin_hash}")
+
+
+            return f"https://mc-heads.net/head/{skin_hash}"
+        else:
+            print(1)
+            return match.group(1)  # Возвращаем найденное значение
     else:
         item = extract_id_from_encoded_data(minecraft_str)
-        if item:
-            return item.replace("ID: ","")
+        if "player_head" not in item:
+            if item:
+                return item.replace("ID: ","")
+            else:
+                return "minecraft:grass_block"
         else:
-            return "minecraft:grass_block"
+            with GzipFile(fileobj=BytesIO(b64decode(minecraft_str.encode()))) as f: value = str(nbtlib.File.from_fileobj(f)["components"]["minecraft:profile"]["properties"][0]["value"])
+
+            base64 = decode_base64_to_json(value)
+            skin_hash = str(base64['textures']['SKIN']['url']).split('/')[-1]
+
+            return f"https://mc-heads.net/head/{skin_hash}"
+
 
 def strip_minecraft_colors(text):
     first_color = None
@@ -184,10 +234,14 @@ async def hello(interaction: discord.Interaction, id: str):
         defaultName, color = strip_minecraft_colors(displayName)
 
         item_raw = data["displayItem"]
-        
+
         if item_raw != None:
             itemData = get_item_id(data["displayItem"])
-            itemData = itemData.replace("minecraft:","")
+            if "https://mc-heads.net/head/" not in itemData:
+                itemData = itemData.replace("minecraft:", "")
+                url_item = f"https://mc.nerothe.com/img/1.21.4/minecraft_{itemData}.png"
+            else:
+                url_item = itemData
         else:
             itemData = "grass_block"
 
@@ -212,7 +266,7 @@ async def hello(interaction: discord.Interaction, id: str):
 
         embed.add_field(name="Чёрный список", value=f"🚫 {blacklist_text}")
 
-        embed.set_thumbnail(url=f"https://mc.nerothe.com/img/1.21.4/minecraft_{itemData}.png")
+        embed.set_thumbnail(url=url_item)
 
         await interaction.response.send_message(embed=embed)
     else:
