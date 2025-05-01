@@ -12,6 +12,7 @@ import zlib
 import base64
 import os
 import gzip
+from typing import Optional
 import io
 from io import BytesIO
 import nbtlib
@@ -23,7 +24,35 @@ from keep_alive import keep_alive
 keep_alive()
 load_dotenv()
 
-token = os.getenv("TOKEN")
+token = "MTM2NTM0NTY1Mjg3NTIwMjYwMg.Gz1kMl.xjLMEqBDV3XJdz3Eewq6wrEy1y76aZ8yhgEjCc"
+
+parameters = {
+    "Уникальный айди": "uniqueId",
+    "Порядковый айди": "numberId",
+    "Владелец": "owner",
+    "Отображаемое имя": "displayName",
+    "Размер": "size",
+    "Голосов": "votes",
+    "Тип генератора": "generatorName",
+    "Спавн": "spawnPosition",
+    "Строители": "builders",
+    "Разработчики": "developers",
+    "Игроки с полётом": "flyers",
+    "Белый список": "whitelist",
+    "Чёрный список": "blacklist",
+    "Доступность": "locked",
+    "Время": "time",
+    "allowBuild": "allowBuild",
+    "allowFlight": "allowFlight",
+    "allowPhysics": "allowPhysics",
+    "Дата создания": "createdTime",
+    "Опубликованность": "published",
+    "Рекомендованность": "recommended",
+    "Отображаемый предмет": "displayItem",
+    "Ресурспак": "resourcepacks",
+    "Категории": "categories"
+}
+
 
 def decode_base64_to_json(base64_str: str) -> dict:
     """
@@ -141,136 +170,172 @@ client = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 @client.event
 async def on_ready():
     await client.tree.sync()
+    print(f'Бот {client.user} готов!')
 
 @client.tree.command(name="world",description="Получает информацию о мире по айди мира")
 @app_commands.allowed_contexts(guilds=True,dms=True,private_channels=True)
+@app_commands.choices(
+    parameter=[
+        app_commands.Choice(name="Уникальный айди", value="uniqueId"),
+        app_commands.Choice(name="Порядковый айди", value="numberId"),
+        app_commands.Choice(name="Владелец", value="owner"),
+        app_commands.Choice(name="Отображаемое имя", value="displayName"),
+        app_commands.Choice(name="Размер", value="size"),
+        app_commands.Choice(name="Голосов", value="votes"),
+        app_commands.Choice(name="Тип генератора", value="generatorName"),
+        app_commands.Choice(name="Спавн", value="spawnPosition"),
+        app_commands.Choice(name="Строители", value="builders"),
+        app_commands.Choice(name="Разработчики", value="developers"),
+        app_commands.Choice(name="Игроки с полётом", value="flyers"),
+        app_commands.Choice(name="Белый список", value="whitelist"),
+        app_commands.Choice(name="Чёрный список", value="blacklist"),
+        app_commands.Choice(name="Доступность", value="locked"),
+        app_commands.Choice(name="Время", value="time"),
+        app_commands.Choice(name="allowBuild", value="allowBuild"),
+        app_commands.Choice(name="allowFlight", value="allowFlight"),
+        app_commands.Choice(name="allowPhysics", value="allowPhysics"),
+        app_commands.Choice(name="Дата создания", value="createdTime"),
+        app_commands.Choice(name="Опубликованность", value="published"),
+        app_commands.Choice(name="Рекомендованность", value="recommended"),
+        app_commands.Choice(name="Отображаемый предмет", value="displayItem"),
+        app_commands.Choice(name="Ресурспак", value="resourcepacks"),
+        app_commands.Choice(name="Категории", value="categories")
+    ]
+)
 @app_commands.user_install()
-async def hello(interaction: discord.Interaction, id: str):
+async def world(interaction: discord.Interaction, id: str, parameter: Optional[str] = None):
     response = requests.get(f"http://api.creative.justmc.io/public/creative/worlds/get/{id}")
     if response.status_code == 200:
         data = response.json()
+        if parameter:
+            if parameter in data:
+                await interaction.response.send_message(f"**{next((k for k, v in parameters.items() if v == parameter), None)}:**\n\n``{data[parameter]}``", ephemeral=True)
 
-        owner_data = data["owner"]
-        owner_name = owner_data["name"]
 
-        size = data["size"]
-        votes = data["votes"]
+        if parameter is None:
 
-        builders_list = data["builders"]
-        builders_text = ""
-        for player in builders_list:
-            player = player["name"]
-            builders_text = builders_text + f"{player}, "
-        builders_text = builders_text[:-2] + ""
-        if len(builders_list)<1:
-            builders_text = "Нет"
 
-        developers_list = data["developers"]
-        developers_text = ""
-        for player in developers_list:
-            player = player["name"]
-            developers_text = developers_text + f"{player}, "
-        developers_text = developers_text[:-2] + ""
-        if len(developers_list)<1:
-            developers_text = "Нет"
+            owner_data = data["owner"]
+            owner_name = owner_data["name"]
 
-        flyers_list = data["flyers"]
-        flyers_text = ""
-        for player in flyers_list:
-            player = player["name"]
-            flyers_text = flyers_text + f"{player}, "
-        flyers_text = flyers_text[:-2] + ""
-        if len(flyers_list)<1:
-            flyers_text = "Нет"
+            size = data["size"]
+            votes = data["votes"]
 
-        whitelist_data = data["whitelist"]
-        whitelist_text = ""
-        for player in whitelist_data:
-            player = player["name"]
-            whitelist_text = whitelist_text + f"{player}, "
-        whitelist_text = whitelist_text[:-2] + ""
-        if len(whitelist_data)<1:
-            whitelist_text = "Нет"
+            builders_list = data["builders"]
+            builders_text = ""
+            for player in builders_list:
+                player = player["name"]
+                builders_text = builders_text + f"{player}, "
+            builders_text = builders_text[:-2] + ""
+            if len(builders_list)<1:
+                builders_text = "Нет"
 
-        blacklist_data = data["blacklist"]
-        blacklist_text = ""
-        for player in blacklist_data:
-            player = player["name"]
-            blacklist_text = blacklist_text + f"{player}, "
-        blacklist_text = blacklist_text[:-2] + ""
-        if len(blacklist_data)<1:
-            blacklist_text = "Нет"
+            developers_list = data["developers"]
+            developers_text = ""
+            for player in developers_list:
+                player = player["name"]
+                developers_text = developers_text + f"{player}, "
+            developers_text = developers_text[:-2] + ""
+            if len(developers_list)<1:
+                developers_text = "Нет"
 
-        createdTime = data["createdTime"]
-        createdTime = createdTime.split("T")[0:]
-        createdTime = createdTime[0]
-        createdTime = createdTime.split("-")[0:]
+            flyers_list = data["flyers"]
+            flyers_text = ""
+            for player in flyers_list:
+                player = player["name"]
+                flyers_text = flyers_text + f"{player}, "
+            flyers_text = flyers_text[:-2] + ""
+            if len(flyers_list)<1:
+                flyers_text = "Нет"
 
-        locked = data["locked"]
-        if locked == True:
-            locked = "Закрыт"
-        else:
-            locked = "Открыт"
+            whitelist_data = data["whitelist"]
+            whitelist_text = ""
+            for player in whitelist_data:
+                player = player["name"]
+                whitelist_text = whitelist_text + f"{player}, "
+            whitelist_text = whitelist_text[:-2] + ""
+            if len(whitelist_data)<1:
+                whitelist_text = "Нет"
 
-        year = createdTime[0]
-        month = createdTime[1]
-        day = createdTime[2]
+            blacklist_data = data["blacklist"]
+            blacklist_text = ""
+            for player in blacklist_data:
+                player = player["name"]
+                blacklist_text = blacklist_text + f"{player}, "
+            blacklist_text = blacklist_text[:-2] + ""
+            if len(blacklist_data)<1:
+                blacklist_text = "Нет"
 
-        createdTime = f"{day}/{month}/{year}"
+            createdTime = data["createdTime"]
+            createdTime = createdTime.split("T")[0:]
+            createdTime = createdTime[0]
+            createdTime = createdTime.split("-")[0:]
 
-        published = data["published"]
-        if published == True:
-            published = "Да"
-        else:
-            published = "Нет"
-
-        recommended = data["recommended"]
-        if recommended == True:
-            recommended = "Да"
-        else:
-            recommended = "Нет"
-
-        displayName = data["displayName"]
-        defaultName, color = strip_minecraft_colors(displayName)
-
-        item_raw = data["displayItem"]
-
-        if item_raw != None:
-            itemData = get_item_id(data["displayItem"])
-            if "https://mc-heads.net/head/" not in itemData:
-                itemData = itemData.replace("minecraft:", "")
-                url_item = f"https://mc.nerothe.com/img/1.21.4/minecraft_{itemData}.png"
+            locked = data["locked"]
+            if locked == True:
+                locked = "Закрыт"
             else:
-                url_item = itemData
+                locked = "Открыт"
+
+            year = createdTime[0]
+            month = createdTime[1]
+            day = createdTime[2]
+
+            createdTime = f"{day}/{month}/{year}"
+
+            published = data["published"]
+            if published == True:
+                published = "Да"
+            else:
+                published = "Нет"
+
+            recommended = data["recommended"]
+            if recommended == True:
+                recommended = "Да"
+            else:
+                recommended = "Нет"
+
+            displayName = data["displayName"]
+            defaultName, color = strip_minecraft_colors(displayName)
+
+            item_raw = data["displayItem"]
+
+            if item_raw != None:
+                itemData = get_item_id(data["displayItem"])
+                if "https://mc-heads.net/head/" not in itemData:
+                    itemData = itemData.replace("minecraft:", "")
+                    url_item = f"https://mc.nerothe.com/img/1.21.4/minecraft_{itemData}.png"
+                else:
+                    url_item = itemData
+            else:
+                itemData = "grass_block"
+
+            embed = discord.Embed(title=f"{defaultName}", description=f"Владелец мира: {owner_name}", color=colourr(f"{color}"))
+            embed.add_field(name="Дата создания", value=f"🕦 {createdTime}", inline=True)
+            embed.add_field(name="Размер", value=f"🗺️ {size * 32}x{size * 32}", inline=True)
+            embed.add_field(name="Голосов", value=f"⭐ {votes}",inline=True)
+
+            embed.add_field(name="",value="",inline=False)
+
+            embed.add_field(name="Доступность", value=f"🚪 {locked}", inline=True)
+            embed.add_field(name="Опубликован", value=f"📢 {published}", inline=True)
+            embed.add_field(name="Рекомендован", value=f"⭐ {recommended}", inline=True)
+
+            embed.add_field(name="", value="", inline=False)
+
+            embed.add_field(name="Белый список", value=f"📄 {whitelist_text}",inline=True)
+            embed.add_field(name="Разработчики", value=f"👨‍💻 {developers_text}", inline=True)
+            embed.add_field(name="Строители", value=f"⚒️ {builders_text}", inline=True)
+
+            embed.add_field(name="", value="", inline=False)
+
+            embed.add_field(name="Чёрный список", value=f"🚫 {blacklist_text}")
+
+            embed.set_thumbnail(url=url_item)
+
+            await interaction.response.send_message(embed=embed)
         else:
-            itemData = "grass_block"
-
-        embed = discord.Embed(title=f"{defaultName}", description=f"Владелец мира: {owner_name}", color=colourr(f"{color}"))
-        embed.add_field(name="Дата создания", value=f"🕦 {createdTime}", inline=True)
-        embed.add_field(name="Размер", value=f"🗺️ {size * 32}x{size * 32}", inline=True)
-        embed.add_field(name="Голосов", value=f"⭐ {votes}",inline=True)
-
-        embed.add_field(name="",value="",inline=False)
-
-        embed.add_field(name="Доступность", value=f"🚪 {locked}", inline=True)
-        embed.add_field(name="Опубликован", value=f"📢 {published}", inline=True)
-        embed.add_field(name="Рекомендован", value=f"⭐ {recommended}", inline=True)
-
-        embed.add_field(name="", value="", inline=False)
-
-        embed.add_field(name="Белый список", value=f"📄 {whitelist_text}",inline=True)
-        embed.add_field(name="Разработчики", value=f"👨‍💻 {developers_text}", inline=True)
-        embed.add_field(name="Строители", value=f"⚒️ {builders_text}", inline=True)
-
-        embed.add_field(name="", value="", inline=False)
-
-        embed.add_field(name="Чёрный список", value=f"🚫 {blacklist_text}")
-
-        embed.set_thumbnail(url=url_item)
-
-        await interaction.response.send_message(embed=embed)
-    else:
-        await interaction.response.send_message("**Мира не существует!**")
+            await interaction.response.send_message("**Мира не существует!**")
 
 @client.tree.command(name="about",description="Показывает информацию о боте")
 @app_commands.allowed_contexts(guilds=True,dms=True,private_channels=True)
