@@ -105,9 +105,6 @@ def get_item_id(minecraft_str):
             value = get_skin_value_nbt(minecraft_str)
             base64 = decode_base64_to_json(value)
             skin_hash = str(base64['textures']['SKIN']['url']).split('/')[-1]
-            print(f"https://mc-heads.net/head/{skin_hash}")
-
-
             return f"https://mc-heads.net/head/{skin_hash}"
         else:
             print(1)
@@ -120,7 +117,17 @@ def get_item_id(minecraft_str):
             else:
                 return "minecraft:grass_block"
         else:
-            with GzipFile(fileobj=BytesIO(b64decode(minecraft_str.encode()))) as f: value = str(nbtlib.File.from_fileobj(f)["components"]["minecraft:profile"]["properties"][0]["value"])
+            with GzipFile(fileobj=BytesIO(b64decode(minecraft_str.encode()))) as f:
+                root = nbtlib.File.from_fileobj(f)  # сразу корень
+                value = (
+                    root.get("components", {})
+                    .get("minecraft:profile", {})
+                    .get("properties", [{}])[0]
+                    .get("value")
+                )
+
+            if not value:
+                return "minecraft:player_head"
 
             base64 = decode_base64_to_json(value)
             skin_hash = str(base64['textures']['SKIN']['url']).split('/')[-1]
