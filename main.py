@@ -24,7 +24,7 @@ from keep_alive import keep_alive
 keep_alive()
 load_dotenv()
 
-token = "MTM2NTM0NTY1Mjg3NTIwMjYwMg.Gz1kMl.xjLMEqBDV3XJdz3Eewq6wrEy1y76aZ8yhgEjCc"
+token = os.getenv("TOKEN")
 
 parameters = {
     "Уникальный айди": "uniqueId",
