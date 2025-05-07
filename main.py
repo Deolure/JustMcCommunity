@@ -263,7 +263,7 @@ async def world(interaction: discord.Interaction, id: str, parameter: Optional[s
 
             categories_list = list(data["categories"])
             if len(categories_list) == 0:
-                categoriess = "❌ Нет"
+                categoriess = "Нет"
             else:
                 categoriess = ', '.join([
                     translated_category.capitalize() if i == 0 else translated_category.lower()
