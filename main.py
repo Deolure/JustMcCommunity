@@ -53,6 +53,29 @@ parameters = {
     "Категории": "categories"
 }
 
+gen_type = {
+    "flat": "🌄 Плоский",
+    "void": "🕳️ Пустой",
+    "coding": "💻 Кодинг",
+    "debug": "🔧 Откладка",
+    "sponge": "🧽 Губка Менгера"
+}
+
+categories = {
+    "arcade": "Аркада",
+    "versus": "Противостояния",
+    "combat": "Сражение",
+    "parkour": "Паркур",
+    "adventure": "Приключение",
+    "roleplay": "Ролевая",
+    "strategy": "Стратегия",
+    "puzzle": "Головоломки",
+    "resources": "Ресурсы",
+    "elimination": "Устранение",
+    "creation": "Творчество",
+    "miscellaneous": "Другое"
+}
+
 
 def decode_base64_to_json(base64_str: str) -> dict:
     """
@@ -161,9 +184,15 @@ def strip_minecraft_colors(text):
     text = html.unescape(text)
 
     # Обработка строки типа '\\n'
-    text = text.split('\\n')[0]
+    parts = text.split('\\n', 1)
+    title = parts[0].strip()
+    description = parts[1].strip() if len(parts) > 1 else None
+    if description is None:
+        description = ""
+        
+    description = description.replace("\\n","\n")
 
-    return text.strip(), f"#{first_color}" if first_color else "#ffffff"
+    return title, description, f"#{first_color}" if first_color else "#ffffff"
 
 
 def colourr(hex_color):
@@ -224,6 +253,20 @@ async def world(interaction: discord.Interaction, id: str, parameter: Optional[s
 
             owner_data = data["owner"]
             owner_name = owner_data["name"]
+
+            genType = data["generatorName"]
+
+            if genType not in gen_type:
+                genName = "❓ Неизвестен"
+            else:
+                genName = gen_type[genType]
+
+            categories_list = data["categories"]
+            categoriess = ', '.join([
+                translated_category.capitalize() if i == 0 else translated_category.lower()
+                for i, category in enumerate(categories_list)
+                for translated_category in [categories.get(category, category)]
+            ])
 
             size = data["size"]
             votes = data["votes"]
@@ -303,7 +346,7 @@ async def world(interaction: discord.Interaction, id: str, parameter: Optional[s
                 recommended = "Нет"
 
             displayName = data["displayName"]
-            defaultName, color = strip_minecraft_colors(displayName)
+            defaultName, description, color = strip_minecraft_colors(displayName)
 
             item_raw = data["displayItem"]
 
@@ -317,25 +360,33 @@ async def world(interaction: discord.Interaction, id: str, parameter: Optional[s
             else:
                 itemData = "grass_block"
 
-            embed = discord.Embed(title=f"{defaultName}", description=f"Владелец мира: {owner_name}", color=colourr(f"{color}"))
+            embed = discord.Embed(title=f"{defaultName}", description=description, color=colourr(f"{color}"))
+            embed.add_field(name="Создатель", value=f"👤 {owner_name}")
+            embed.add_field(name="Айди", value=f"🆔 {id}")
             embed.add_field(name="Дата создания", value=f"🕦 {createdTime}", inline=True)
-            embed.add_field(name="Размер", value=f"🗺️ {size * 32}x{size * 32}", inline=True)
-            embed.add_field(name="Голосов", value=f"⭐ {votes}",inline=True)
 
             embed.add_field(name="",value="",inline=False)
 
             embed.add_field(name="Доступность", value=f"🚪 {locked}", inline=True)
             embed.add_field(name="Опубликован", value=f"📢 {published}", inline=True)
-            embed.add_field(name="Рекомендован", value=f"⭐ {recommended}", inline=True)
+            embed.add_field(name="Рекомендован", value=f"🌟 {recommended}", inline=True)
 
             embed.add_field(name="", value="", inline=False)
 
+            embed.add_field(name="Размер", value=f"🗺️ {size * 32}x{size * 32}", inline=True)
+            embed.add_field(name="Голосов", value=f"⭐ {votes}", inline=True)
+            embed.add_field(name="Тип генератора", value=genName)
+
+
+            embed.add_field(name="", value="", inline=False)
+
+            embed.add_field(name="Категории", value=f"🗂️ {categoriess}")
             embed.add_field(name="Белый список", value=f"📄 {whitelist_text}",inline=True)
             embed.add_field(name="Разработчики", value=f"👨‍💻 {developers_text}", inline=True)
-            embed.add_field(name="Строители", value=f"⚒️ {builders_text}", inline=True)
 
             embed.add_field(name="", value="", inline=False)
 
+            embed.add_field(name="Строители", value=f"⚒️ {builders_text}", inline=True)
             embed.add_field(name="Чёрный список", value=f"🚫 {blacklist_text}")
 
             embed.set_thumbnail(url=url_item)
