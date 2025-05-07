@@ -189,7 +189,7 @@ def strip_minecraft_colors(text):
     description = parts[1].strip() if len(parts) > 1 else None
     if description is None:
         description = ""
-        
+
     description = description.replace("\\n","\n")
 
     return title, description, f"#{first_color}" if first_color else "#ffffff"
@@ -261,12 +261,15 @@ async def world(interaction: discord.Interaction, id: str, parameter: Optional[s
             else:
                 genName = gen_type[genType]
 
-            categories_list = data["categories"]
-            categoriess = ', '.join([
-                translated_category.capitalize() if i == 0 else translated_category.lower()
-                for i, category in enumerate(categories_list)
-                for translated_category in [categories.get(category, category)]
-            ])
+            categories_list = list(data["categories"])
+            if len(categories_list) == 0:
+                categoriess = "❌ Нет"
+            else:
+                categoriess = ', '.join([
+                    translated_category.capitalize() if i == 0 else translated_category.lower()
+                    for i, category in enumerate(categories_list)
+                    for translated_category in [categories.get(category, category)]
+                ])
 
             size = data["size"]
             votes = data["votes"]
