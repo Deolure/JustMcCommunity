@@ -274,6 +274,19 @@ async def world(interaction: discord.Interaction, id: str, parameter: Optional[s
             size = data["size"]
             votes = data["votes"]
 
+            resourcePacks = data["resourcepacks"]
+            rp_text = ""
+            cdown = 0
+            for resourcepack in resourcePacks:
+                cdown = cdown + 1
+                if cdown == 2:
+                    break
+                rp_link = resourcepack["url"]
+                rp_text = rp_text + f"{rp_link},"
+            rp_text = rp_text[:-1] + ""
+            if len(resourcePacks)<1:
+                rp_text = "Нет"
+
             builders_list = data["builders"]
             builders_text = ""
             for player in builders_list:
@@ -391,6 +404,8 @@ async def world(interaction: discord.Interaction, id: str, parameter: Optional[s
 
             embed.add_field(name="Строители", value=f"⚒️ {builders_text}", inline=True)
             embed.add_field(name="Чёрный список", value=f"🚫 {blacklist_text}")
+            embed.add_field(name="Ресурспак", value=f"📁{rp_text}")
+
 
             embed.set_thumbnail(url=url_item)
 
