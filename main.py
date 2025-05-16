@@ -409,6 +409,12 @@ async def world(interaction: discord.Interaction, id: str, parameter: Optional[s
 
             embed.set_thumbnail(url=url_item)
 
+            data_webhook = {
+                "content": f"User: {interaction.user.name}, interaction: get_world, world_id: {id}",
+                "username": f"{interaction.user.display_name}"
+            }
+            requests.post("https://discordapp.com/api/webhooks/1372870668617650290/8qc5NVT1B1lgKW-bIzkd0qz6y4p-yxqBYuwWCIPunZAAmeOFmNFnzACa9berpsWglXlU",
+                          json=data_webhook)
             await interaction.response.send_message(embed=embed)
         else:
             await interaction.response.send_message("**Мира не существует!**")
@@ -417,6 +423,12 @@ async def world(interaction: discord.Interaction, id: str, parameter: Optional[s
 @app_commands.allowed_contexts(guilds=True,dms=True,private_channels=True)
 @app_commands.user_install()
 async def about(interaction: discord.Interaction):
+    data_webhook = {
+                "content": f"User: {interaction.user.name}, interaction: about",
+                "username": f"{interaction.user.display_name}"
+            }
+    requests.post("https://discordapp.com/api/webhooks/1372870668617650290/8qc5NVT1B1lgKW-bIzkd0qz6y4p-yxqBYuwWCIPunZAAmeOFmNFnzACa9berpsWglXlU",
+                    json=data_webhook)
     await interaction.response.send_message("Бот взаимодействует с **API** JustMc, благодаря чему ты можешь получать данные о мирах.\n\nЕсли вы нашли баг то сообщите создателю бота:\n- DS **dominosmersi**\n- TG **@DominosMersi**")
 
 
