@@ -20,8 +20,6 @@ from typing import Dict, Any
 from gzip import GzipFile
 from base64 import b64decode
 from dotenv import load_dotenv
-from keep_alive import keep_alive
-keep_alive()
 load_dotenv()
 
 token = os.getenv("TOKEN")
@@ -377,34 +375,34 @@ async def world(interaction: discord.Interaction, id: str, parameter: Optional[s
                 itemData = "grass_block"
 
             embed = discord.Embed(title=f"{defaultName}", description=description, color=colourr(f"{color}"))
-            embed.add_field(name="Создатель", value=f"👤 {owner_name}")
-            embed.add_field(name="Айди", value=f"🆔 {id}")
-            embed.add_field(name="Дата создания", value=f"🕦 {createdTime}", inline=True)
+            embed.add_field(name="Создатель", value=f"{owner_name}")
+            embed.add_field(name="Айди", value=f"{id}")
+            embed.add_field(name="Дата создания", value=f"{createdTime}", inline=True)
 
             embed.add_field(name="",value="",inline=False)
 
-            embed.add_field(name="Доступность", value=f"🚪 {locked}", inline=True)
-            embed.add_field(name="Опубликован", value=f"📢 {published}", inline=True)
-            embed.add_field(name="Рекомендован", value=f"🌟 {recommended}", inline=True)
+            embed.add_field(name="Доступность", value=f"{locked}", inline=True)
+            embed.add_field(name="Опубликован", value=f"{published}", inline=True)
+            embed.add_field(name="Рекомендован", value=f"{recommended}", inline=True)
 
             embed.add_field(name="", value="", inline=False)
 
-            embed.add_field(name="Размер", value=f"🗺️ {size * 32}x{size * 32}", inline=True)
-            embed.add_field(name="Голосов", value=f"⭐ {votes}", inline=True)
+            embed.add_field(name="Размер", value=f"{size * 32}x{size * 32}", inline=True)
+            embed.add_field(name="Голосов", value=f"{votes}", inline=True)
             embed.add_field(name="Тип генератора", value=genName)
 
 
             embed.add_field(name="", value="", inline=False)
 
-            embed.add_field(name="Категории", value=f"🗂️ {categoriess}")
-            embed.add_field(name="Белый список", value=f"📄 {whitelist_text}",inline=True)
-            embed.add_field(name="Разработчики", value=f"👨‍💻 {developers_text}", inline=True)
+            embed.add_field(name="Категории", value=f"{categoriess}")
+            embed.add_field(name="Белый список", value=f"{whitelist_text}",inline=True)
+            embed.add_field(name="Разработчики", value=f"{developers_text}", inline=True)
 
             embed.add_field(name="", value="", inline=False)
 
-            embed.add_field(name="Строители", value=f"⚒️ {builders_text}", inline=True)
-            embed.add_field(name="Чёрный список", value=f"🚫 {blacklist_text}")
-            embed.add_field(name="Ресурспак", value=f"📁{rp_text}")
+            embed.add_field(name="Строители", value=f"{builders_text}", inline=True)
+            embed.add_field(name="Чёрный список", value=f"{blacklist_text}")
+            embed.add_field(name="Ресурспак", value=f"{rp_text}")
 
 
             embed.set_thumbnail(url=url_item)
